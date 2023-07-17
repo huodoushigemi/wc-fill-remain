@@ -1,7 +1,7 @@
 {
   "name": "wc-fill-remain",
   "private": false,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
@@ -17,11 +17,11 @@
   },
   "author": "灬都是个谜",
   "license": "MIT",
-  "description": "wc-fill-remain is a flow layout component written using web-component",
+  "description": "The wc-fill-remain is a component that mimics SliverFillRemaining and is written using web-component",
   "scripts": {
     "dev": "vite",
     "build:docs": "tsc && vite build --outDir docs --base ./",
-    "build": "rimraf ./dist && rollup -c",
+    "build": "rimraf ./dist/* && rollup -c",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -29,7 +29,6 @@
     "esbuild": "^0.18.12",
     "rollup": "^3.23.0",
     "rollup-plugin-esbuild": "^5.0.0",
-    "rollup-plugin-postcss": "^4.0.2",
     "tslib": "^2.5.3",
     "typescript": "^5.0.2",
     "vite": "^4.3.9"

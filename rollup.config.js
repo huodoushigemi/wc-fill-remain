@@ -1,7 +1,6 @@
 import { defineConfig } from 'rollup'
 import esbuild from 'rollup-plugin-esbuild'
 import typescript from '@rollup/plugin-typescript'
-import postcss from 'rollup-plugin-postcss'
 import pkg from './package.json' assert { type: 'json' }
 
 const formats = {
@@ -14,13 +13,12 @@ export default defineConfig({
   input: 'src/index.ts',
   output: Object.entries(formats).map(([format, ext]) => ({
     format,
-    file: `./dist/index.${ext}`
+    file: `./dist/index.${ext}`,
   })),
   external: Object.keys(pkg.dependencies ?? []),
   // prettier-ignore
   plugins: [
-    esbuild(),
-    postcss(),
-    typescript({ declaration: true, emitDeclarationOnly: true }),
+    esbuild({ minify: true, target: ['chrome58', 'ios13'] }),
+    typescript({ declaration: true, emitDeclarationOnly: true, outDir: 'dist' }),
   ]
 })

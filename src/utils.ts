@@ -4,7 +4,7 @@ export const isRange = (val: number, min: number, max: number) => val > min && v
 export const camlize = (s: string) => s.replace(/-\w/g, (e => e.slice(1).toUpperCase()))
 export const hyphenate = (s: string) => s.replace(/(.)([A-Z])/g, (_, s: string, w: string) => s + '-' + w.toLowerCase())
 
-export const isEL = (e: HTMLDivElement | Window): e is HTMLDivElement => e instanceof HTMLElement
+export const isEL = (e: any): e is HTMLElement => e instanceof HTMLElement
 
 export function remove<T>(list: T[], e: T) {
   const i = list.indexOf(e)

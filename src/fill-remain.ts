@@ -1,49 +1,68 @@
-import { getScrollParent, h, isEL, isRange, range, useRaf } from "./utils"
+import { getScrollParent, h, isEL } from "./utils"
 
 document.head.appendChild(h('style', { innerHTML: 'wc-fill-remain{display:block}' }))
 
 export class FillRemain extends HTMLElement {
-  scroller: HTMLDivElement | Window | undefined
-  scrollParent: HTMLDivElement | undefined
-  sizeObs!: ResizeObserver
+  #scroller: HTMLDivElement | Window | undefined
+  #sizeObs!: ResizeObserver
+  #childObs!: MutationObserver
 
-  constructor() {
-    super()
-    // const root = this.attachShadow({ mode: 'open' })
-    // this.appendChild(h('style', { innerHTML: ':host{display:block}' }))
+  get #father() {
+    return isEL(this.#scroller) ? this.#scroller : document.body
   }
 
   connectedCallback() {
-    this.scroller = getScrollParent(this)
-    this.sizeObs = new ResizeObserver(this.update)
-    isEL(this.scroller) && this.sizeObs.observe(this.scroller)
-    window.addEventListener('resize', this.update)
-    this.update()
+    this.#scroller = getScrollParent(this)
+    this.#sizeObs = new ResizeObserver(this.#update)
+    this.#sizeObs.observe(this.#father)
+    Array.prototype.forEach.call(this.#father.children, e => this.#sizeObs.observe(e))
+  
+    this.#childObs = new MutationObserver(ms => {
+      let flag = true
+      ms.forEach(m => {
+        if (flag) flag = !m.addedNodes.length
+        m.addedNodes.forEach(e => isEL(e) && this.#sizeObs.observe(e))
+        m.removedNodes.forEach(e => isEL(e) && this.#sizeObs.unobserve(e))
+      })
+      flag && this.#update()
+    })
+    this.#childObs.observe(this.#father, { childList: true })
+
+    window.addEventListener('resize', this.#update)
   }
 
   disconnectedCallback() {
-    this.scroller = undefined
-    this.sizeObs.disconnect()
-    window.removeEventListener('resize', this.update)
+    this.#scroller = undefined
+    this.#sizeObs.disconnect()
+    this.#childObs.disconnect()
+    window.removeEventListener('resize', this.#update)
   }
 
-  update = () => {
+  #flag = false
+  #update = async () => {
+    if (this.#flag) return
+    this.#flag = true
+    await Promise.resolve()
+    this.#_update()
+    requestAnimationFrame(() => this.#flag = false)
+  }
+  
+  #_update = () => {
+    // console.log('update');
+    
     this.style.minHeight = '0'
     this.style.height = '0'
-    this.offsetHeight
 
     const nill = h('div')
-    const scroll = this.scroller!
-    const parent = isEL(scroll) ? scroll : document.body
-    parent.appendChild(nill)
-    parent.offsetHeight
+    this.#father.appendChild(nill)
     const rect = nill.getBoundingClientRect()
     nill.remove()
     
-    // parent.offsetHeight
-    const boundary = isEL(scroll) ? scroll.getBoundingClientRect().bottom : window.innerHeight
+    const boundary = isEL(this.#scroller) ? this.#scroller.getBoundingClientRect().bottom : Math.max(window.innerHeight, document.documentElement.getBoundingClientRect().bottom)
     this.style.minHeight = rect.top > boundary ? `` : `${boundary - rect.top}px`
     this.style.height = ''
+
+    this.#childObs.takeRecords()
   }
 }
 
