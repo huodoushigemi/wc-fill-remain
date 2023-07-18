@@ -15,18 +15,21 @@ export class FillRemain extends HTMLElement {
     this.#scroller = getScrollParent(this)
     this.#sizeObs = new ResizeObserver(this.#update)
     this.#sizeObs.observe(this.#father)
-    Array.prototype.forEach.call(this.#father.children, e => this.#sizeObs.observe(e))
+    const children = [...this.#father.children]
+    children.forEach(e => this.#sizeObs.observe(e))
   
     this.#childObs = new MutationObserver(ms => {
       let flag = true
       ms.forEach(m => {
         if (flag) flag = !m.addedNodes.length
-        m.addedNodes.forEach(e => isEL(e) && this.#sizeObs.observe(e))
+        m.addedNodes.forEach(e => isEL(e) && (this.#sizeObs.observe(e), attrObs(e)))
         m.removedNodes.forEach(e => isEL(e) && this.#sizeObs.unobserve(e))
       })
       flag && this.#update()
     })
-    this.#childObs.observe(this.#father, { childList: true })
+    this.#childObs.observe(this.#father, { childList: true, attributes: true })
+    const attrObs = (e: Element) => this.#childObs.observe(e, { attributes: true })
+    children.forEach(attrObs)
 
     window.addEventListener('resize', this.#update)
   }
@@ -59,7 +62,7 @@ export class FillRemain extends HTMLElement {
     nill.remove()
     
     const boundary = isEL(this.#scroller) ? this.#scroller.getBoundingClientRect().bottom : Math.max(window.innerHeight, document.documentElement.getBoundingClientRect().bottom)
-    this.style.minHeight = rect.top > boundary ? `` : `${boundary - rect.top}px`
+    this.style.minHeight = rect.top > boundary ? `` : `${boundary - rect.top - parseInt(getComputedStyle(this.#father).paddingBottom)}px`
     this.style.height = ''
 
     this.#childObs.takeRecords()

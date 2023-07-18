@@ -19,6 +19,6 @@ export default defineConfig({
   // prettier-ignore
   plugins: [
     esbuild({ minify: true, target: ['chrome58', 'ios13'] }),
-    typescript({ declaration: true, emitDeclarationOnly: true, outDir: 'dist' }),
+    // typescript({ declaration: true, emitDeclarationOnly: true, outDir: 'dist' }),
   ]
 })
